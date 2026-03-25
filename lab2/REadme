@@ -1,0 +1,101 @@
+Лабораторна 2 - Трирівнева архітектура з DI
+Реалізація серверної частини аплікації з трьома рівнями архітектури:
+
+Рівень доступу до даних (DAL) - Data Access Layer
+Рівень бізнес-логіки (BLL) - Business Logic Layer
+Презентаційний рівень (PL) - Presentation Layer
+
+
+Технології
+
+Python 3.10+
+SQLAlchemy - ORM фреймворк
+SQLite - база даних
+csv (стандартна бібліотека) - парсинг CSV файлів
+ABC (Abstract Base Classes) - інтерфейси / DI контейнер
+
+
+Архітектура
+1. Рівень доступу до даних (DAL)
+
+Інтерфейси репозиторіїв: IUserRepository, IHotelRepository, IReviewRepository, ICsvReader
+Імплементації репозиторіїв з використанням SQLAlchemy ORM
+CsvReader — зчитування даних з .csv файлу
+
+2. Рівень бізнес-логіки (BLL)
+
+DataImportService — сервіс для імпорту даних з CSV
+Використовує інтерфейси DAL через dependency injection (не конкретні класи)
+Виконує бізнес-логіку: створення моделей, обчислення середніх рейтингів
+
+3. Презентаційний рівень (PL)
+
+Інтерфейси контролерів (без імплементації на даний момент)
+IHotelController, IReviewController, IDataImportController
+
+
+Dependency Injection
+Використовується патерн Inversion of Control (IoC) та Dependency Injection (DI):
+
+Класи бізнес-логіки використовують інтерфейси, а не конкретні імплементації
+Container клас керує залежностями (аналог TSyringe)
+Всі реєстрації в src/config/container.py
+
+
+Структура проекту
+src/
+├── domain/
+│   ├── entities/           # SQLAlchemy ORM моделі (User, Hotel, Review)
+│   └── enums/              # ReviewStatus enum
+├── dal/                    # Data Access Layer
+│   ├── interfaces/         # Інтерфейси репозиторіїв (ABC)
+│   ├── repositories/       # Імплементації репозиторіїв
+│   └── data_source.py      # SQLAlchemy конфігурація
+├── bll/                    # Business Logic Layer
+│   ├── interfaces/         # Інтерфейси сервісів (ABC)
+│   └── services/           # Імплементації сервісів
+├── presentation/           # Presentation Layer
+│   └── interfaces/         # Інтерфейси контролерів (ABC)
+├── config/
+│   └── container.py        # DI контейнер конфігурація
+└── utils/
+    └── csv_generator.py    # Генератор CSV файлів
+main.py                     # Головний файл додатку
+requirements.txt            # Залежності
+
+Встановлення
+bashpip install -r requirements.txt
+або окремо:
+bashpip install sqlalchemy
+
+Використання
+1. Генерація CSV файлу
+Створює CSV файл з тестовими даними (за замовчуванням 1000 рядків):
+bashpython src/utils/csv_generator.py
+Або з власною кількістю рядків та шляхом:
+bashpython src/utils/csv_generator.py 2000 data/reviews.csv
+2. Імпорт даних в базу даних
+bashpython main.py data/reviews.csv
+
+Модель даних
+ReviewableEntity (базова)
+ПолеТипОписidIntegerУнікальний ідентифікаторnameStringНазваaddressStringАдресаaverage_ratingFloatСередній рейтингentity_typeStringДискримінатор типу (STI)
+Hotel (наслідує ReviewableEntity)
+ПолеТипОписstarsIntegerКількість зірок (1–5)
+User
+ПолеТипОписidIntegerУнікальний ідентифікаторusernameStringІм'я користувачаemailStringЕлектронна пошта (унікальна)
+Review
+ПолеТипОписidIntegerУнікальний ідентифікаторcommentStringКоментарratingIntegerОцінка (1–5)dateDateTimeДата відгукуstatusEnumСтатус (PENDING, APPROVED, REJECTED)user_idIntegerЗв'язок з користувачемhotel_idIntegerЗв'язок з готелем
+
+Формат CSV файлу
+username,userEmail,entityType,entityName,entityAddress,stars,comment,rating,date,status
+john.smith1,john.smith1@gmail.com,hotel,Grand Hotel Imperial,"1234 Main Street, New York",5,Excellent stay!,5,2023-05-15,APPROVED
+
+Особливості реалізації
+
+Всі дані в одному CSV файлі — користувачі, готелі та відгуки зберігаються разом
+Унікальність — при імпорті автоматично виявляються та створюються лише унікальні записи
+Зв'язки — коректно створюються зв'язки між таблицями через foreign keys
+Середні рейтинги — автоматично обчислюються після імпорту всіх відгуків
+SQLAlchemy ORM — автоматично створює схему бази даних при запуску (Base.metadata.create_all)
+DI/IoC — повна підтримка інверсії управління та впровадження залежностей через Container
