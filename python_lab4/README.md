@@ -1,19 +1,19 @@
 # Лабораторна 4 (Python) — GoF Strategy для виводу даних
 
 Читає датасет `ParkingViolationCodes_March_2024.xlsx` та виводить записи у вибране сховище через патерн **Strategy**.  
-Точний аналог оригінального TypeScript/Node.js проекту.
+
 
 ---
 
 ## Технічний стек
 
-| Python              | TypeScript (оригінал)  |
-|---------------------|------------------------|
-| `openpyxl`          | `xlsx` npm             |
-| `kafka-python`      | `kafkajs` npm          |
-| `redis`             | `redis` npm            |
-| `ABC`               | TypeScript `interface` |
-| `dataclass`         | TypeScript `interface` |
+| Python              |
+|---------------------|
+| `openpyxl`          |
+| `kafka-python`      |
+| `redis`             |
+| `ABC`               | 
+| `dataclass`         | 
 
 ---
 
